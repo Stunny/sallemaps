@@ -35,7 +35,7 @@ public class HashTable {
         int i = 0;
         int hash = hashI(key, i);
 
-        while(hash < size && !values[hash].key.equals(key)){
+        while(hash < size && values[hash] != null && !values[hash].key.equals(key)){
             hash = hashI(key, ++i);
         }
 
@@ -43,6 +43,8 @@ public class HashTable {
             values[hash] = new TablePair();
             values[hash].key = key;
             values[hash].value = value;
+
+            pairCount++;
             return;
         }
 
@@ -60,7 +62,7 @@ public class HashTable {
         int i = 0;
         int hash = hashI(key, i);
 
-        while(hash < size && !values[hash].key.equals(key)){
+        while(hash < size && values[hash] != null && !values[hash].key.equals(key)){
             hash = hashI(key, ++i);
         }
 
@@ -78,7 +80,7 @@ public class HashTable {
         int i = 0;
         int hash = hashI(key, i);
 
-        while(hash < size && !values[hash].key.equals(key)){
+        while(hash < size && values[hash] != null && !values[hash].key.equals(key)){
             hash = hashI(key, ++i);
         }
 
@@ -90,6 +92,13 @@ public class HashTable {
             return values[hash].value;
 
         return null;
+    }
+
+    /**
+     * @return Number of pairs stored in the structure
+     */
+    public int size(){
+        return pairCount;
     }
 
     //----------------------------------------------------------------------------------------------------------------//
@@ -131,6 +140,27 @@ public class HashTable {
             values = auxValues;
             size = newCapacity;
         }
+    }
+
+    //----------------------------------------------------------------------------------------------------------------//
+
+    public static void main(String[] args) {
+        int initialSize = 331;
+
+        HashTable ht = new HashTable(initialSize);
+
+        ht.put("hola", 56);
+        ht.put("hello", 45);
+        ht.put("lmao", 73);
+        ht.put("lolaso", 12);
+        ht.put("kappa", 43);
+
+        System.out.println(ht.get("hola"));
+        System.out.println(ht.get("hello"));
+        System.out.println(ht.get("lolaso"));
+        System.out.println(ht.get("kappa"));
+
+
     }
 
 }
