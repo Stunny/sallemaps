@@ -1,6 +1,7 @@
 package Collections;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class RedBlackTree {
 
@@ -141,11 +142,11 @@ public class RedBlackTree {
 
         //Actualizamos la raiz del arbol
         if(this.root.parent != null){
-
             this.root = this.root.parent;
             this.root.parent = null;
         }
 
+        this.root.color = BLACK;
         this.nodeCount++;
     }
 
@@ -279,7 +280,7 @@ public class RedBlackTree {
         aux.parent.leftChild = newNode;
         newNode.leftChild.rightChild = null;
 
-        insert3a(newNode);
+        insert3a(newNode.leftChild);
     }
 
     /**
@@ -298,7 +299,7 @@ public class RedBlackTree {
         aux.parent.rightChild = newNode;
         newNode.rightChild.leftChild = null;
 
-        insert3b(newNode);
+        insert3b(newNode.rightChild);
     }
 
     /**
@@ -309,19 +310,21 @@ public class RedBlackTree {
     private void insert3a(RBTnode newNode){
         RBTnode aux = new RBTnode();
 
-        aux.parent = newNode.parent.parent.parent;
-        aux.rightChild = newNode.parent.parent;
+        aux.parent = newNode.parent.parent;
 
-        newNode.parent.parent = aux.parent;
-        aux.rightChild.leftChild = null;
-        newNode.parent.rightChild = aux.rightChild;
-        aux.rightChild.parent = newNode.parent;
+        newNode.parent.parent = aux.parent.parent;
+        newNode.parent.rightChild = aux.parent;
 
-        if(aux.parent != null){
-            if(aux.parent.rightChild == newNode.parent.rightChild)
-                aux.parent.rightChild = newNode.parent;
-            else aux.parent.leftChild = newNode.parent;
+        if(aux.parent.parent != null){
+            if(aux.parent.parent.leftChild == aux.parent)
+                aux.parent.parent.leftChild = newNode.parent;
+            else
+                aux.parent.parent.rightChild = newNode.parent;
         }
+
+        aux.parent.parent = newNode.parent;
+        aux.parent.leftChild = null;
+
 
         //Actualizo las referencias a los hermanos
         newNode.parent.sibling = newNode.parent.rightChild.sibling;
@@ -341,19 +344,20 @@ public class RedBlackTree {
     private void insert3b(RBTnode newNode){
         RBTnode aux = new RBTnode();
 
-        aux.parent = newNode.parent.parent.parent;
-        aux.leftChild = newNode.parent.parent;
+        aux.parent = newNode.parent.parent;
 
-        newNode.parent.parent = aux.parent;
-        aux.leftChild.rightChild = null;
-        newNode.parent.leftChild = aux.leftChild;
-        aux.leftChild.parent = newNode.parent;
+        newNode.parent.parent = aux.parent.parent;
+        newNode.parent.leftChild = aux.parent;
 
-        if(aux.parent != null){
-            if(aux.parent.leftChild == newNode.parent.leftChild)
-                aux.parent.leftChild = newNode.parent;
-            else aux.parent.rightChild = newNode.parent;
+        if(aux.parent.parent != null){
+            if(aux.parent.parent.leftChild == aux.parent)
+                aux.parent.parent.leftChild = newNode.parent;
+            else
+                aux.parent.parent.rightChild = newNode.parent;
         }
+
+        aux.parent.parent = newNode.parent;
+        aux.parent.rightChild = null;
 
         //Actualizo las referencias a los hermanos
         newNode.parent.sibling = newNode.parent.leftChild.sibling;
@@ -450,7 +454,7 @@ public class RedBlackTree {
             rbt.insert("85", 85);
             rbt.insert("14", 14);
 
-            System.out.println(rbt.preOrder().toString());
+            System.out.println(Arrays.toString(rbt.postOrder()));
         } catch (RBTException e) {
             System.out.println(e.getMessage());
         }
