@@ -44,6 +44,14 @@ public class RedBlackTree {
             return -1;
         }
 
+        public boolean equals(Object o){
+            if(!o.getClass().toString().equals(RBTnode.class.toString())){
+                return false;
+            }
+
+            return ((RBTnode)o).element == this.element;
+        }
+
         /**
          * Toggles the color of the node
          */
@@ -381,7 +389,7 @@ public class RedBlackTree {
             return null;
         }
 
-        if(currentNode.element.equals(index)){
+        if(currentNode.equals(index)){
             return currentNode;
         }else{
 
@@ -455,6 +463,10 @@ public class RedBlackTree {
             rbt.insert("14", 14);
 
             System.out.println(Arrays.toString(rbt.postOrder()));
+            System.out.println(Arrays.toString(rbt.preOrder()));
+            System.out.println(Arrays.toString(rbt.inOrder()));
+            System.out.println();
+            System.out.println(rbt.get("08").toString());
         } catch (RBTException e) {
             System.out.println(e.getMessage());
         }
