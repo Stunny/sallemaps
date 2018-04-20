@@ -1,5 +1,7 @@
 package Collections;
 
+import java.util.Arrays;
+
 public class HashTable {
 
     private class TablePair{
@@ -68,6 +70,7 @@ public class HashTable {
 
         if(values[hash] != null && values[hash].key.equals(key)){
             values[hash] = null;
+            pairCount--;
         }
     }
 
@@ -124,20 +127,11 @@ public class HashTable {
      * y redimensiona el vector en caso de ser necesario
      */
     private void checkCapacity(){
-        int qPairs = 0;
 
-        for(int i = 0; i < values.length; i++)
-            qPairs += values[i] != null ? 1 : 0;
-
-        if(qPairs/size > 0.6){
+        if(pairCount/size > 0.6){
             int newCapacity = size + 617;
-            TablePair[] auxValues = new TablePair[newCapacity];
 
-            for(int i = 0; i < size; i++){
-                auxValues[i] = values[i];
-            }
-
-            values = auxValues;
+            values = Arrays.copyOf(values, newCapacity);
             size = newCapacity;
         }
     }

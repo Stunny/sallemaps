@@ -187,7 +187,6 @@ public class RedBlackTree {
      * @return Content of the tree ordered in Pre-Order
      */
     public Object[] preOrder(){
-        Object[] contents = new Object[nodeCount];
         ArrayList pre = new ArrayList();
 
         preOrder(this.root, pre);
@@ -199,7 +198,6 @@ public class RedBlackTree {
      * @return Content of the tree oredered in In-Order
      */
     public Object[] inOrder(){
-        Object[] contents = new Object[nodeCount];
 
         ArrayList in = new ArrayList();
 
@@ -212,7 +210,6 @@ public class RedBlackTree {
      * @return Content of the tree ordered in Post-Order
      */
     public Object[] postOrder(){
-        Object[] contents = new Object[nodeCount];
 
         ArrayList post = new ArrayList();
 
