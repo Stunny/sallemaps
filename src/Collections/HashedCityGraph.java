@@ -34,18 +34,21 @@ public class HashedCityGraph extends CityGraph {
      * @param destination Destination city for the connection
      * @param route data of the new connection
      */
-    public void addRoute(City origin, City destination, Connection route) {
+    public void addRoute(Connection route) {
 
         AdjListNode newEdge = new AdjListNode();
-        newEdge.source = origin;
-        newEdge.destination = destination;
         newEdge.label = route;
         newEdge.next = null;
 
-        Object index = cityIndexes.get(origin.getName());
+        Object originIndex = cityIndexes.get(route.getFrom()),
+                destIndex = cityIndexes.get(route.getTo());
 
-        if(index != null){
-            int i = (int) index;
+        if(originIndex != null && destIndex != null){
+            int i = (int) originIndex;
+            int j = (int) destIndex;
+
+            newEdge.source = adjList[i].source;
+            newEdge.destination = adjList[j].source;
 
             AdjListNode aux = adjList[i];
             adjList[i].childCount++;
@@ -53,18 +56,6 @@ public class HashedCityGraph extends CityGraph {
                 aux = aux.next;
             }
             aux.next = newEdge;
-        }else{
-            adjList[nextFreeSpot] = new AdjListNode();
-            adjList[nextFreeSpot].source = origin;
-            adjList[nextFreeSpot].label = null;
-            adjList[nextFreeSpot].destination = null;
-
-            adjList[nextFreeSpot].next = newEdge;
-            cityIndexes.put(origin.getName(), nextFreeSpot);
-
-            nextFreeSpot++;
-
-            checkCapacity();
         }
 
     }
@@ -76,9 +67,9 @@ public class HashedCityGraph extends CityGraph {
      * @param destination
      * @return null if there is no connection between the two cities. If found, returns a connection object with the route data
      */
-    public Connection getLabel(City origin, City destination){
+    public Connection getLabel(String origin, String destination){
 
-        Object index = cityIndexes.get(origin.getName());
+        Object index = cityIndexes.get(origin);
 
         if(index != null){
             int i = (int) index;
@@ -102,10 +93,10 @@ public class HashedCityGraph extends CityGraph {
      * @return null if the city isn't stored in the structure. An array of cities if found and filled with those
      * cities with a direct connection.
      */
-    public City[] getChildren(City origin) {
+    public City[] getChildren(String origin) {
 
         City[] children = null;
-        Object index = cityIndexes.get(origin.getName());
+        Object index = cityIndexes.get(origin);
 
         if(index != null){
 
@@ -130,13 +121,13 @@ public class HashedCityGraph extends CityGraph {
      * @param to Destination city. Path's finnish
      * @return Result path.
      */
-    protected Path dijkstra(City from, City to, int mode){
+    protected Path dijkstra(String from, String to, int mode){
         ArrayList<AdjListNode> conjuntVertex = new ArrayList<>();
         Connection[] d = new Connection[nextFreeSpot];
         Integer[] c = new Integer[nextFreeSpot];
 
-        int fromIndex = (int) cityIndexes.get(from.getName());
-        int toIndex = (int) cityIndexes.get(to.getName());
+        int fromIndex = (int) cityIndexes.get(from);
+        int toIndex = (int) cityIndexes.get(to);
         AdjListNode fromNode = adjList[fromIndex];
         AdjListNode toNode = adjList[toIndex];
 
@@ -146,11 +137,11 @@ public class HashedCityGraph extends CityGraph {
 
             AdjListNode w = adjList[i];
 
-            if(w.source.getName().equals(from.getName())) {
-                d[i] = new Connection(from.getName(), null, 0, 0);
+            if(w.source.getName().equals(from)) {
+                d[i] = new Connection(from, null, 0, 0);
             } else{
                 conjuntVertex.add(w);
-                d[i] = getLabel(from, w.source);
+                d[i] = getLabel(fromNode.source.getName(), w.source.getName());
                 c[i] = d[i] == null? null: fromIndex;
             }
 
@@ -180,9 +171,10 @@ public class HashedCityGraph extends CityGraph {
                 for (AdjListNode w : conjuntVertex) {
                     int k = (int) cityIndexes.get(w.source.getName());
 
-                    Connection uw = getLabel(u.source, w.source);
+                    Connection uw = getLabel(u.source.getName(), w.source.getName());
 
-                    if (d[j].getDistance() + uw.getDistance() < d[k].getDistance()) {
+                    if (d[k] == null || d[j].getDistance() + uw.getDistance() < d[k].getDistance()) {
+                        d[k] = new Connection(fromNode.source.getName(), uw.getTo(), 0, 0);
                         d[k].setDistance(d[j].getDistance() + uw.getDistance());
                         c[k] = j;
                     }
@@ -214,9 +206,10 @@ public class HashedCityGraph extends CityGraph {
                 for (AdjListNode w : conjuntVertex) {
                     int k = (int) cityIndexes.get(w.source.getName());
 
-                    Connection uw = getLabel(u.source, w.source);
+                    Connection uw = getLabel(u.source.getName(), w.source.getName());
 
-                    if (d[j].getDuration() + uw.getDuration() < d[k].getDuration()) {
+                    if (d[k] == null || d[j].getDuration() + uw.getDuration() < d[k].getDuration()) {
+                        d[k] = new Connection(fromNode.source.getName(), uw.getTo(), 0, 0);
                         d[k].setDuration(d[j].getDuration() + uw.getDuration());
                         c[k] = j;
                     }

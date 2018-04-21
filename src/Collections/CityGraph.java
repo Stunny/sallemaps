@@ -78,49 +78,43 @@ public class CityGraph {
     /**
      * Adds a new connection between two cities stored in the DiGraph.
      * If any of the cities isn't yet stored in the structure, it will be added
-     * @param origin Origin city for the connection
-     * @param destination Destination city for the connection
      * @param route data of the new connection
      */
-    public void addRoute(City origin, City destination, Connection route){
-        AdjListNode newEdge = new AdjListNode();
-        newEdge.source = origin;
-        newEdge.destination = destination;
-        newEdge.label = route;
-        newEdge.next = null;
+    public void addRoute(Connection route){
 
-        boolean found = false;
+        boolean foundOrigin = false, foundDest = false;
 
-        int i;
+        int originIndex = 0, destIndex = 0;
 
-        for (i = 0; i < adjList.length; i++) {
+        for (int i = 0; i < adjList.length; i++) {
             if(adjList[i] == null){
                 break;
             }
 
-            if (adjList[i].source.equals(origin)){
-                found = true;
-                break;
+            if (adjList[i].source.getName().equals(route.getFrom())){
+                originIndex = i;
+                foundOrigin = true;
+            }
+
+            if (adjList[i].source.getName().equals(route.getTo())){
+                destIndex = i;
+                foundDest = true;
             }
         }
 
-        if(found){
-            AdjListNode aux = adjList[i];
-            adjList[i].childCount++;
+        AdjListNode newEdge = new AdjListNode();
+        newEdge.source = adjList[originIndex].source;
+        newEdge.destination = adjList[destIndex].source;
+        newEdge.label = route;
+        newEdge.next = null;
+
+        if(foundOrigin){
+            AdjListNode aux = adjList[originIndex];
+            aux.childCount++;
             while(aux.next != null){
                 aux = aux.next;
             }
             aux.next = newEdge;
-        }else{
-            adjList[nextFreeSpot] = new AdjListNode();
-            adjList[nextFreeSpot].source = origin;
-            adjList[nextFreeSpot].label = null;
-            adjList[nextFreeSpot].destination = null;
-
-            adjList[nextFreeSpot].next = newEdge;
-            nextFreeSpot++;
-
-            checkCapacity();
         }
 
     }
@@ -131,7 +125,7 @@ public class CityGraph {
      * @param destination
      * @return null if there is no connection between the two cities. If found, returns a connection object with the route data
      */
-    public Connection getLabel(City origin, City destination){
+    public Connection getLabel(String origin, String destination){
         boolean found = false;
 
         int i;
@@ -141,7 +135,7 @@ public class CityGraph {
                 break;
             }
 
-            if (adjList[i].source.equals(origin)){
+            if (adjList[i].source.getName().equals(origin)){
                 found = true;
                 break;
             }
@@ -166,7 +160,7 @@ public class CityGraph {
      * @return null if the city isn't stored in the structure. An array of cities if found and filled with those
      * cities with a direct connection.
      */
-    public City[] getChildren(City origin) {
+    public City[] getChildren(String origin) {
         boolean found = false;
         City[] children = null;
         int i;
@@ -176,7 +170,7 @@ public class CityGraph {
                 break;
             }
 
-            if (adjList[i].source.equals(origin)) {
+            if (adjList[i].source.getName().equals(origin)) {
                 found = true;
                 break;
             }
@@ -203,7 +197,7 @@ public class CityGraph {
      * @param mode Shortest path by distance of trip or by duration of trip
      * @return Result path. Null if mode isn't one of the specified or if one of the cities isn't yet in the structure
      */
-    public Path shortestPath(City from, City to, int mode){
+    public Path shortestPath(String from, String to, int mode){
         boolean fromOK = checkCityInStructure(from),
                 toOK = checkCityInStructure(to);
 
@@ -242,7 +236,7 @@ public class CityGraph {
     /**
      * Checks if the specified city is currently stored in the structure
      */
-    protected boolean checkCityInStructure(City c) {
+    protected boolean checkCityInStructure(String c) {
         boolean found = false;
 
         for (AdjListNode anAdjList : adjList) {
@@ -250,7 +244,7 @@ public class CityGraph {
                 break;
             }
 
-            if (anAdjList.source.equals(c)) {
+            if (anAdjList.source.getName().equals(c)) {
                 found = true;
                 break;
             }
@@ -265,7 +259,7 @@ public class CityGraph {
      * @param to Destination city. Path's finnish
      * @return Result path.
      */
-    protected Path dijkstra(City from, City to, int mode){
+    protected Path dijkstra(String from, String to, int mode){
         ArrayList<AdjListNode> conjuntVertex = new ArrayList<>();
         Connection[] d = new Connection[nextFreeSpot];
         Integer[] c = new Integer[nextFreeSpot];
@@ -276,11 +270,11 @@ public class CityGraph {
         int toIndex = -1;
 
         for (int i = 0; i < nextFreeSpot; i++) {
-            if(adjList[i].source.getName().equals(to.getName())){
+            if(adjList[i].source.getName().equals(to)){
                 toIndex = i;
                 toNode = adjList[i];
             }
-            if(adjList[i].source.getName().equals(from.getName())) {
+            if(adjList[i].source.getName().equals(from)) {
                 fromNode = adjList[i];
                 fromIndex = i;
             }
@@ -292,11 +286,11 @@ public class CityGraph {
 
             AdjListNode w = adjList[i];
 
-            if(w.source.getName().equals(from.getName())) {
-                d[i] = new Connection(from.getName(), null, 0, 0);
+            if(w.source.getName().equals(from)) {
+                d[i] = new Connection(from, null, 0, 0);
             } else{
                 conjuntVertex.add(w);
-                d[i] = getLabel(from, w.source);
+                d[i] = getLabel(fromNode.source.getName(), w.source.getName());
                 c[i] = d[i] == null? null: fromIndex;
             }
 
@@ -313,10 +307,10 @@ public class CityGraph {
                 int j = 0;
                 for (AdjListNode w : conjuntVertex) {
                     for (j = 0; j < d.length; j++)
-                        if (d[j].getFrom().equals(w.source.getName()))
+                        if (d[j] != null && d[j].getFrom().equals(w.source.getName()))
                             break;
 
-                    if (d[j].getDistance() <= val) {
+                    if (d[j] != null && d[j].getDistance() <= val) {
                         u = w;
                         val = d[j].getDistance();
                     }
@@ -328,12 +322,13 @@ public class CityGraph {
                 for (AdjListNode w : conjuntVertex) {
                     int k = 0;
                     for (k = 0; k < d.length; k++)
-                        if (d[k].getFrom().equals(w.source.getName()))
+                        if (d[k] != null && d[k].getFrom().equals(w.source.getName()))
                             break;
 
-                    Connection uw = getLabel(u.source, w.source);
+                    Connection uw = getLabel(u.source.getName(), w.source.getName());
 
-                    if (d[j].getDistance() + uw.getDistance() < d[k].getDistance()) {
+                    if (d[k] == null || d[j].getDistance() + uw.getDistance() < d[k].getDistance()) {
+                        d[k] = new Connection(fromNode.source.getName(), uw.getTo(), 0, 0);
                         d[k].setDistance(d[j].getDistance() + uw.getDistance());
                         c[k] = j;
                     }
@@ -351,11 +346,11 @@ public class CityGraph {
                 AdjListNode u = null;
                 int j = 0;
                 for (AdjListNode w : conjuntVertex) {
-                    for (j = 0; j < d.length; j++)
-                        if (d[j].getFrom().equals(w.source.getName()))
+                    for (j = 0; j < d.length-1; j++)
+                        if (d[j] != null && d[j].getFrom().equals(w.source.getName()))
                             break;
 
-                    if (d[j].getDuration() <= val) {
+                    if (d[j] != null && d[j].getDuration() <= val) {
                         u = w;
                         val = d[j].getDuration();
                     }
@@ -367,12 +362,13 @@ public class CityGraph {
                 for (AdjListNode w : conjuntVertex) {
                     int k = 0;
                     for (k = 0; k < d.length; k++)
-                        if (d[k].getFrom().equals(w.source.getName()))
+                        if (d[k] != null && d[k].getFrom().equals(w.source.getName()))
                             break;
 
-                    Connection uw = getLabel(u.source, w.source);
+                    Connection uw = getLabel(u.source.getName(), w.source.getName());
 
-                    if (d[j].getDuration() + uw.getDuration() < d[k].getDuration()) {
+                    if (d[k] == null || d[j].getDuration() + uw.getDuration() < d[k].getDuration()) {
+                        d[k] = new Connection(fromNode.source.getName(), uw.getTo(), 0, 0);
                         d[k].setDuration(d[j].getDuration() + uw.getDuration());
                         c[k] = j;
                     }
@@ -405,7 +401,7 @@ public class CityGraph {
             j = k;
             k = c[j];
 
-            semiPath = getLabel(adjList[k].source, adjList[j].source);
+            semiPath = getLabel(adjList[k].source.getName(), adjList[j].source.getName());
 
             p.addToPath(adjList[k].source, semiPath.getDistance(), semiPath.getDuration());
         }

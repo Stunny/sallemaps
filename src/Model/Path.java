@@ -1,5 +1,8 @@
 package Model;
 
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -59,5 +62,21 @@ public class Path {
         path.add(c);
         this.distance += distance;
         this.duration += duration;
+    }
+
+    public String toString(){
+        StringBuilder sb = new StringBuilder("-->Origin: "+from
+                +"\n-->Destination: "+to
+                +"\n-->Distance: "+ Float.toString(distance/1000)+"km"
+                +"\n-->Total duration: "+ LocalTime.ofSecondOfDay(duration).toString()
+                +"\n-->Path: "+from+"->");
+
+        for(City c : path){
+            sb.append(c.getName()+"->");
+        }
+
+        sb.append(to);
+
+        return sb.toString();
     }
 }
