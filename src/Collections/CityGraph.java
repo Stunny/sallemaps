@@ -383,6 +383,16 @@ public class CityGraph {
         }
     }
 
+
+    /**
+     * Devuelve el camino inimo generado por el algoritmo de dijkstra
+     * @param c Vector de ciudades mas cercanas por indice
+     * @param from nodo origen del viaje
+     * @param to nodo destino del viage
+     * @param fromIndex indice del nodo origen en el grafo
+     * @param toIndex indice del nodo destino en el grafo
+     * @return Camino de una
+     */
     protected Path getPath(Integer[] c, AdjListNode from, AdjListNode to, int fromIndex, int toIndex){
 
         Path p = new Path(from.source, to.source);

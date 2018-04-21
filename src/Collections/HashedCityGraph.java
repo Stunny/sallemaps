@@ -2,6 +2,9 @@ package Collections;
 
 import Model.City;
 import Model.Connection;
+import Model.Path;
+
+import java.util.ArrayList;
 
 public class HashedCityGraph extends CityGraph {
 
@@ -119,5 +122,108 @@ public class HashedCityGraph extends CityGraph {
         }
 
         return children;
+    }
+
+    /**
+     * Calculates the shortest path in terms of distance betweeen the two specified cities using Dijkstra's algorithm
+     * @param from Origin city. Path's start
+     * @param to Destination city. Path's finnish
+     * @return Result path.
+     */
+    protected Path dijkstra(City from, City to, int mode){
+        ArrayList<AdjListNode> conjuntVertex = new ArrayList<>();
+        Connection[] d = new Connection[nextFreeSpot];
+        Integer[] c = new Integer[nextFreeSpot];
+
+        int fromIndex = (int) cityIndexes.get(from.getName());
+        int toIndex = (int) cityIndexes.get(to.getName());
+        AdjListNode fromNode = adjList[fromIndex];
+        AdjListNode toNode = adjList[toIndex];
+
+
+        //INICIALIZACION
+        for(int i = 0; i < nextFreeSpot; i++){
+
+            AdjListNode w = adjList[i];
+
+            if(w.source.getName().equals(from.getName())) {
+                d[i] = new Connection(from.getName(), null, 0, 0);
+            } else{
+                conjuntVertex.add(w);
+                d[i] = getLabel(from, w.source);
+                c[i] = d[i] == null? null: fromIndex;
+            }
+
+        }
+
+        if(mode == PATH_BY_DISTANCE) {
+
+            //CALCULO DE DISTANCIAS ENTRE VERTICES MEDIANTE DISTANCIA ENTRE CIUDADES
+            for (int i = 0; i < nextFreeSpot - 1; i++) {
+
+                //Escogemos un vertice u tal que su distancia al origen sea minima
+                int val = Integer.MAX_VALUE;
+                AdjListNode u = null;
+                int j = 0;
+                for (AdjListNode w : conjuntVertex) {
+                    j = (int) cityIndexes.get(w.source.getName());
+
+                    if (d[j].getDistance() <= val) {
+                        u = w;
+                        val = d[j].getDistance();
+                    }
+                }
+
+                conjuntVertex.remove(u);
+
+                //Actualizacion de las distancias minimas de todos los vertices del conjunto pasando por u
+                for (AdjListNode w : conjuntVertex) {
+                    int k = (int) cityIndexes.get(w.source.getName());
+
+                    Connection uw = getLabel(u.source, w.source);
+
+                    if (d[j].getDistance() + uw.getDistance() < d[k].getDistance()) {
+                        d[k].setDistance(d[j].getDistance() + uw.getDistance());
+                        c[k] = j;
+                    }
+                }
+            }
+
+            return getPath(c, fromNode, toNode, fromIndex, toIndex);
+        }else{
+
+            //CALCULO DE DISTANCIAS ENTRE VERTICES MEDIANTE TIEMPO ENTRE CIUDADES
+            for (int i = 0; i < nextFreeSpot - 1; i++) {
+
+                //Escogemos un vertice u tal que su distancia al origen sea minima
+                int val = Integer.MAX_VALUE;
+                AdjListNode u = null;
+                int j = 0;
+                for (AdjListNode w : conjuntVertex) {
+                    j = (int) cityIndexes.get(w.source.getName());
+
+                    if (d[j].getDuration() <= val) {
+                        u = w;
+                        val = d[j].getDuration();
+                    }
+                }
+
+                conjuntVertex.remove(u);
+
+                //Actualizacion de las distancias minimas de todos los vertices del conjunto pasando por u
+                for (AdjListNode w : conjuntVertex) {
+                    int k = (int) cityIndexes.get(w.source.getName());
+
+                    Connection uw = getLabel(u.source, w.source);
+
+                    if (d[j].getDuration() + uw.getDuration() < d[k].getDuration()) {
+                        d[k].setDuration(d[j].getDuration() + uw.getDuration());
+                        c[k] = j;
+                    }
+                }
+            }
+            return getPath(c, fromNode, toNode, fromIndex, toIndex);
+
+        }
     }
 }

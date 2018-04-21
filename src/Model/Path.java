@@ -15,6 +15,8 @@ public class Path {
 
     private int duration;
 
+    private boolean straight;
+
     public Path(City from, City to) {
         this.from = from;
         this.to = to;
@@ -22,6 +24,7 @@ public class Path {
 
         distance = 0;
         duration = 0;
+        straight = false;
     }
 
     public void addToPath(){
@@ -37,7 +40,10 @@ public class Path {
     }
 
     public ArrayList<City> getPath() {
-        Collections.reverse(path);
+        if(!straight) {
+            Collections.reverse(path);
+            straight = true;
+        }
         return path;
     }
 
