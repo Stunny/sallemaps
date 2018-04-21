@@ -116,7 +116,7 @@ public class HashTable {
         int length = key.length();
 
         for(int j = length-3; j < length; j++)
-            hash += (int)key.charAt(j) * Math.pow(27, j);
+            hash += (int)key.charAt(j < 0? 0: j) * Math.pow(27, j < 0? 0 - j: j);
 
         return (hash +(i*(8681-(hash/8681))))%this.size;
 
