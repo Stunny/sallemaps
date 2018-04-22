@@ -1,16 +1,24 @@
 import Collections.CityGraph;
+import Collections.HashedCityGraph;
 import Collections.RBTCityGraph;
 import Model.City;
 import Model.Connection;
+import Network.HttpRequest;
+import Network.WSGoogleMaps;
 import Utils.JsonReader;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import java.time.LocalTime;
 import java.util.Scanner;
 
 public class SalleMaps {
 
     private CityGraph graph;
+
+    private HashedCityGraph hashedGraph;
+
+    private RBTCityGraph rbtGraph;
 
     public SalleMaps(){
         graph = null;
@@ -88,6 +96,8 @@ public class SalleMaps {
         }
 
         graph = new CityGraph(cities);
+        hashedGraph = new HashedCityGraph(cities);
+        rbtGraph = new RBTCityGraph(cities);
 
         JsonArray connectionsJson = mapJson.get("connections").getAsJsonArray();
         int connsize = connectionsJson.size();
@@ -104,12 +114,75 @@ public class SalleMaps {
                     )
             );
 
+            hashedGraph.addRoute(new Connection(
+                    connJson.get("from").getAsString(),
+                    connJson.get("to").getAsString(),
+                    connJson.get("distance").getAsInt(),
+                    connJson.get("duration").getAsInt()
+            ));
+
+            rbtGraph.addRoute(new Connection(
+                    connJson.get("from").getAsString(),
+                    connJson.get("to").getAsString(),
+                    connJson.get("distance").getAsInt(),
+                    connJson.get("duration").getAsInt()
+            ));
+
 
         }
     }
 
     private void searchCity() {
 
+        System.out.println();
+        System.out.print("Type city name: ");
+        String origin = readInput();
+
+        if(hashedGraph.checkCityInStructure(origin)){
+            City c = hashedGraph.getCity(origin);
+
+            System.out.println();
+            System.out.println("-->Name: "+c.getName());
+            System.out.println("-->Country: "+c.getCountry());
+            System.out.println("-->Coordinates: "+c.getLatitude()+", "+c.getLongitude());
+            System.out.println("-->Connections: ");
+
+            City[] conns = hashedGraph.getChildren(origin);
+
+            if(conns == null){
+                System.out.println();
+                System.out.println("\t NONE");
+                return;
+            }
+
+            for (City city : conns){
+
+                Connection conn = hashedGraph.getLabel(origin, city.getName());
+
+                System.out.println();
+                System.out.println("\t>-->Name: "+city.getName());
+                System.out.println("\t>-->Country: "+city.getCountry());
+                System.out.println("\t>-->Coordinates: "+city.getLatitude()+", "+city.getLongitude());
+                System.out.println("\t>-->Distance from "+origin+": "+Float.toString(conn.getDistance()/1000)+"km");
+                System.out.println("\t>-->Duration of trip from "+origin+": "+LocalTime.ofSecondOfDay(conn.getDuration()).toString());
+            }
+
+            System.out.println();
+
+        }else{
+            WSGoogleMaps ws = WSGoogleMaps.getInstance();
+            ws.geolocate(origin, new HttpRequest.HttpReply() {
+                @Override
+                public void onSuccess(String s) {
+                    //todo
+                }
+
+                @Override
+                public void onError(String s) {
+                    //todo
+                }
+            });
+        }
     }
 
     private void calculateRoute() {
@@ -147,15 +220,40 @@ public class SalleMaps {
                     option = readInput();
             }
         }while(!option.equals("1") && !option.equals("2"));
+        System.out.println();
 
 
-
+        long now = System.nanoTime();
         System.out.println(
                 graph.shortestPath(origin, destination, mode)
                         .toString()
         );
-
+        long noNow = System.nanoTime()-now;
         System.out.println();
+        System.out.println("Normal Graph-->Calculated in: "+Float.toString(noNow/1000)+"us");
+        System.out.println();
+
+
+        now = System.nanoTime();
+        System.out.println(
+                hashedGraph.shortestPath(origin, destination, mode)
+                        .toString()
+        );
+        noNow = System.nanoTime()-now;
+        System.out.println("Hashed indexes Graph-->Calculated in: "+Float.toString(noNow/1000)+"us");
+        System.out.println();
+
+        /*
+
+        long now = System.currentTimeMillis();
+        System.out.println(
+                rbtGraph.shortestPath(origin, destination, mode)
+                        .toString()
+        );
+        long noNow = System.currentTimeMillis()-now;
+        System.out.println("RBT indexes Graph-->Calculated in: "+Long.toString(noNow)+"ms");
+
+        System.out.println();*/
     }
 
     private void printMenu(){

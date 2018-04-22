@@ -127,13 +127,21 @@ public class CityGraph {
     }
 
     /**
+     * Before using this method, please check if the city is stored in the structure using the checkCityInStructure method
+     * @param name city name
+     * @return city data
+     */
+    public City getCity(String name){
+        return adjList[getIndex(name)].source;
+    }
+
+    /**
      * Searches all cities connected directly with the specified origin city
      * @param origin Source city for which the children are wanted
      * @return null if the city isn't stored in the structure. An array of cities if found and filled with those
      * cities with a direct connection.
      */
     public City[] getChildren(String origin) {
-        boolean found = false;
         City[] children = null;
         int i = getIndex(origin);
 
@@ -197,11 +205,11 @@ public class CityGraph {
     /**
      * Checks if the specified city is currently stored in the structure
      */
-    protected boolean checkCityInStructure(String c) {
+    public boolean checkCityInStructure(String c) {
 
-        int index = getIndex(c);
+        Integer index = getIndex(c);
 
-        return index != -1;
+        return !new Integer(-1).equals(index);
     }
 
     /**
@@ -241,7 +249,6 @@ public class CityGraph {
         if(mode == PATH_BY_DISTANCE) {
 
             //CALCULO DE DISTANCIAS ENTRE VERTICES MEDIANTE DISTANCIA ENTRE CIUDADES
-            System.out.println("Calculando por distancia...");
             while (!q.isEmpty()) {
 
                 //Escogemos un vertice u tal que su distancia al origen sea minima
@@ -278,7 +285,6 @@ public class CityGraph {
 
             return getPath(c, fromNode, toNode, fromIndex, toIndex);
         }else{
-            System.out.println("Calculando por tiempo...");
 
             //CALCULO DE DISTANCIAS ENTRE VERTICES MEDIANTE DISTANCIA ENTRE CIUDADES
             while (!q.isEmpty()) {
@@ -349,8 +355,12 @@ public class CityGraph {
         return p;
     }
 
+    /**
+     * @param name city name
+     * @return Index in graph
+     */
     protected Integer getIndex(String name){
-        Integer index = null;
+        Integer index = new Integer(-1);
         for (int i = 0; i < nextFreeSpot; i++) {
             if(adjList[i].source.getName().equals(name)){
                 index = i;

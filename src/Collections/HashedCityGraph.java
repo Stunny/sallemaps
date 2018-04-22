@@ -62,6 +62,9 @@ public class HashedCityGraph extends CityGraph {
 
     @Override
     protected Integer getIndex(String name) {
-        return (Integer) cityIndexes.get(name);
+
+        Integer index = (Integer) cityIndexes.get(name);
+
+        return index == null? -1: index;
     }
 }
