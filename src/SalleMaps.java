@@ -73,7 +73,7 @@ public class SalleMaps {
         String destination = readInput();
 
         System.out.println(
-                graph.shortestPath(origin, destination, CityGraph.PATH_BY_DURATION)
+                graph.shortestPath(origin, destination, CityGraph.PATH_BY_DISTANCE)
                         .toString()
         );
 

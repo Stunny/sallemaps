@@ -65,17 +65,17 @@ public class Path {
     }
 
     public String toString(){
-        StringBuilder sb = new StringBuilder("-->Origin: "+from
-                +"\n-->Destination: "+to
+        StringBuilder sb = new StringBuilder("-->Origin: "+from.getName()
+                +"\n-->Destination: "+to.getName()
                 +"\n-->Distance: "+ Float.toString(distance/1000)+"km"
                 +"\n-->Total duration: "+ LocalTime.ofSecondOfDay(duration).toString()
-                +"\n-->Path: "+from+"->");
+                +"\n-->Path: "+from.getName()+"->");
 
         for(City c : path){
             sb.append(c.getName()+"->");
         }
 
-        sb.append(to);
+        sb.append(to.getName());
 
         return sb.toString();
     }

@@ -82,33 +82,17 @@ public class CityGraph {
      */
     public void addRoute(Connection route){
 
-        boolean foundOrigin = false, foundDest = false;
+        int originIndex = getIndex(route.getFrom()),
+                destIndex = getIndex(route.getTo());
 
-        int originIndex = 0, destIndex = 0;
 
-        for (int i = 0; i < adjList.length; i++) {
-            if(adjList[i] == null){
-                break;
-            }
+        if(originIndex != -1){
+            AdjListNode newEdge = new AdjListNode();
+            newEdge.source = adjList[originIndex].source;
+            newEdge.destination = adjList[destIndex].source;
+            newEdge.label = route;
+            newEdge.next = null;
 
-            if (adjList[i].source.getName().equals(route.getFrom())){
-                originIndex = i;
-                foundOrigin = true;
-            }
-
-            if (adjList[i].source.getName().equals(route.getTo())){
-                destIndex = i;
-                foundDest = true;
-            }
-        }
-
-        AdjListNode newEdge = new AdjListNode();
-        newEdge.source = adjList[originIndex].source;
-        newEdge.destination = adjList[destIndex].source;
-        newEdge.label = route;
-        newEdge.next = null;
-
-        if(foundOrigin){
             AdjListNode aux = adjList[originIndex];
             aux.childCount++;
             while(aux.next != null){
@@ -126,26 +110,14 @@ public class CityGraph {
      * @return null if there is no connection between the two cities. If found, returns a connection object with the route data
      */
     public Connection getLabel(String origin, String destination){
-        boolean found = false;
 
-        int i;
+        int i = getIndex(origin);
 
-        for (i = 0; i < adjList.length; i++) {
-            if(adjList[i] == null){
-                break;
-            }
-
-            if (adjList[i].source.getName().equals(origin)){
-                found = true;
-                break;
-            }
-        }
-
-        if(found){
+        if(i != -1){
             AdjListNode aux = adjList[i];
             while(aux.next != null){
                 aux = aux.next;
-                if(aux.destination.equals(destination)){
+                if(aux.destination.getName().equals(destination)){
                     return aux.label;
                 }
             }
@@ -163,20 +135,9 @@ public class CityGraph {
     public City[] getChildren(String origin) {
         boolean found = false;
         City[] children = null;
-        int i;
+        int i = getIndex(origin);
 
-        for (i = 0; i < adjList.length; i++) {
-            if (adjList[i] == null) {
-                break;
-            }
-
-            if (adjList[i].source.getName().equals(origin)) {
-                found = true;
-                break;
-            }
-        }
-
-        if(found){
+        if(i != -1){
             children = new City[adjList[i].childCount];
             AdjListNode aux = adjList[i];
             int j = 0;
@@ -237,20 +198,10 @@ public class CityGraph {
      * Checks if the specified city is currently stored in the structure
      */
     protected boolean checkCityInStructure(String c) {
-        boolean found = false;
 
-        for (AdjListNode anAdjList : adjList) {
-            if (anAdjList == null) {
-                break;
-            }
+        int index = getIndex(c);
 
-            if (anAdjList.source.getName().equals(c)) {
-                found = true;
-                break;
-            }
-        }
-
-        return found;
+        return index != -1;
     }
 
     /**
@@ -260,26 +211,16 @@ public class CityGraph {
      * @return Result path.
      */
     protected Path dijkstra(String from, String to, int mode){
-        ArrayList<AdjListNode> conjuntVertex = new ArrayList<>();
+
+        ArrayList<AdjListNode> q = new ArrayList<>();
         Connection[] d = new Connection[nextFreeSpot];
         Integer[] c = new Integer[nextFreeSpot];
 
-        AdjListNode fromNode = null;
-        AdjListNode toNode = null;
-        int fromIndex = -1;
-        int toIndex = -1;
+        int fromIndex = getIndex(from);
+        int toIndex = getIndex(to);
+        AdjListNode fromNode = adjList[fromIndex];
+        AdjListNode toNode = adjList[toIndex];
 
-        for (int i = 0; i < nextFreeSpot; i++) {
-            if(adjList[i].source.getName().equals(to)){
-                toIndex = i;
-                toNode = adjList[i];
-            }
-            if(adjList[i].source.getName().equals(from)) {
-                fromNode = adjList[i];
-                fromIndex = i;
-            }
-
-        }
 
         //INICIALIZACION
         for(int i = 0; i < nextFreeSpot; i++){
@@ -287,9 +228,10 @@ public class CityGraph {
             AdjListNode w = adjList[i];
 
             if(w.source.getName().equals(from)) {
-                d[i] = new Connection(from, null, 0, 0);
+                d[i] = new Connection(from, from, 0, 0);
+                c[i] = fromIndex;
             } else{
-                conjuntVertex.add(w);
+                q.add(w);
                 d[i] = getLabel(fromNode.source.getName(), w.source.getName());
                 c[i] = d[i] == null? null: fromIndex;
             }
@@ -299,38 +241,36 @@ public class CityGraph {
         if(mode == PATH_BY_DISTANCE) {
 
             //CALCULO DE DISTANCIAS ENTRE VERTICES MEDIANTE DISTANCIA ENTRE CIUDADES
-            for (int i = 0; i < nextFreeSpot - 1; i++) {
+            while (!q.isEmpty()) {
 
                 //Escogemos un vertice u tal que su distancia al origen sea minima
                 int val = Integer.MAX_VALUE;
                 AdjListNode u = null;
                 int j = 0;
-                for (AdjListNode w : conjuntVertex) {
-                    for (j = 0; j < d.length; j++)
-                        if (d[j] != null && d[j].getFrom().equals(w.source.getName()))
-                            break;
+                int uIndex = 0;
+                for (AdjListNode w : q) {
+                   j = getIndex(w.source.getName());
 
-                    if (d[j] != null && d[j].getDistance() <= val) {
+                    if (d[j] != null && !d[j].getTo().equals(from) && d[j].getDistance() <= val) {
                         u = w;
                         val = d[j].getDistance();
+                        uIndex = j;
                     }
                 }
 
-                conjuntVertex.remove(u);
+                q.remove(u);
 
                 //Actualizacion de las distancias minimas de todos los vertices del conjunto pasando por u
-                for (AdjListNode w : conjuntVertex) {
-                    int k = 0;
-                    for (k = 0; k < d.length; k++)
-                        if (d[k] != null && d[k].getFrom().equals(w.source.getName()))
-                            break;
+                for (AdjListNode w : q) {
+                    int k;
+                    k = getIndex(w.source.getName());
 
                     Connection uw = getLabel(u.source.getName(), w.source.getName());
 
-                    if (d[k] == null || d[j].getDistance() + uw.getDistance() < d[k].getDistance()) {
+                    if (uw != null && (d[k] == null || d[uIndex].getDistance() + uw.getDistance() < d[k].getDistance())) {
                         d[k] = new Connection(fromNode.source.getName(), uw.getTo(), 0, 0);
-                        d[k].setDistance(d[j].getDistance() + uw.getDistance());
-                        c[k] = j;
+                        d[k].setDistance(d[uIndex].getDistance() + uw.getDistance());
+                        c[k] = uIndex;
                     }
                 }
             }
@@ -338,39 +278,37 @@ public class CityGraph {
             return getPath(c, fromNode, toNode, fromIndex, toIndex);
         }else{
 
-            //CALCULO DE DISTANCIAS ENTRE VERTICES MEDIANTE TIEMPO ENTRE CIUDADES
-            for (int i = 0; i < nextFreeSpot - 1; i++) {
+            //CALCULO DE DISTANCIAS ENTRE VERTICES MEDIANTE DISTANCIA ENTRE CIUDADES
+            while (!q.isEmpty()) {
 
                 //Escogemos un vertice u tal que su distancia al origen sea minima
                 int val = Integer.MAX_VALUE;
                 AdjListNode u = null;
                 int j = 0;
-                for (AdjListNode w : conjuntVertex) {
-                    for (j = 0; j < d.length-1; j++)
-                        if (d[j] != null && d[j].getFrom().equals(w.source.getName()))
-                            break;
+                int uIndex = 0;
+                for (AdjListNode w : q) {
+                    j = getIndex(w.source.getName());
 
-                    if (d[j] != null && d[j].getDuration() <= val) {
+                    if (d[j] != null && !d[j].getTo().equals(from) && d[j].getDuration() <= val) {
                         u = w;
                         val = d[j].getDuration();
+                        uIndex = j;
                     }
                 }
 
-                conjuntVertex.remove(u);
+                q.remove(u);
 
                 //Actualizacion de las distancias minimas de todos los vertices del conjunto pasando por u
-                for (AdjListNode w : conjuntVertex) {
-                    int k = 0;
-                    for (k = 0; k < d.length; k++)
-                        if (d[k] != null && d[k].getFrom().equals(w.source.getName()))
-                            break;
+                for (AdjListNode w : q) {
+                    int k;
+                    k = getIndex(w.source.getName());
 
                     Connection uw = getLabel(u.source.getName(), w.source.getName());
 
-                    if (d[k] == null || d[j].getDuration() + uw.getDuration() < d[k].getDuration()) {
+                    if (uw != null && (d[k] == null || d[uIndex].getDuration() + uw.getDuration() < d[k].getDuration())) {
                         d[k] = new Connection(fromNode.source.getName(), uw.getTo(), 0, 0);
-                        d[k].setDuration(d[j].getDuration() + uw.getDuration());
-                        c[k] = j;
+                        d[k].setDistance(d[uIndex].getDuration() + uw.getDuration());
+                        c[k] = uIndex;
                     }
                 }
             }
@@ -407,6 +345,17 @@ public class CityGraph {
         }
 
         return p;
+    }
+
+    protected Integer getIndex(String name){
+        Integer index = null;
+        for (int i = 0; i < nextFreeSpot; i++) {
+            if(adjList[i].source.getName().equals(name)){
+                index = i;
+            }
+        }
+
+        return index;
     }
 
 }
