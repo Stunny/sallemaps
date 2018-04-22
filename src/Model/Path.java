@@ -42,14 +42,6 @@ public class Path {
         return to;
     }
 
-    public ArrayList<City> getPath() {
-        if(!straight) {
-            Collections.reverse(path);
-            straight = true;
-        }
-        return path;
-    }
-
     public int getDistance() {
         return distance;
     }
@@ -65,11 +57,15 @@ public class Path {
     }
 
     public String toString(){
+
+        Collections.reverse(path);
+
         StringBuilder sb = new StringBuilder("-->Origin: "+from.getName()
                 +"\n-->Destination: "+to.getName()
                 +"\n-->Distance: "+ Float.toString(distance/1000)+"km"
                 +"\n-->Total duration: "+ LocalTime.ofSecondOfDay(duration).toString()
-                +"\n-->Path: "+from.getName()+"->");
+                +"\n-->Path: "
+        );
 
         for(City c : path){
             sb.append(c.getName()+"->");

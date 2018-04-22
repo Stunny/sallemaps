@@ -1,4 +1,5 @@
 import Collections.CityGraph;
+import Collections.RBTCityGraph;
 import Model.City;
 import Model.Connection;
 import Utils.JsonReader;
@@ -63,41 +64,6 @@ public class SalleMaps {
 
     }
 
-    private void calculateRoute() {
-
-        System.out.println();
-        System.out.print("Introduce origin city name: ");
-        String origin = readInput();
-        System.out.println();
-        System.out.print("Introduce destination city name: ");
-        String destination = readInput();
-
-        System.out.println(
-                graph.shortestPath(origin, destination, CityGraph.PATH_BY_DISTANCE)
-                        .toString()
-        );
-
-    }
-
-    private void searchCity() {
-
-    }
-
-    private void printMenu(){
-        System.out.println("SALLE MAPS");
-        System.out.println();
-        System.out.println("1. Import map");
-        System.out.println("2. Search city");
-        System.out.println("3. Calculate route");
-        System.out.println("4. Shut down");
-        System.out.println();
-    }
-
-    private String readInput(){
-        Scanner kb = new Scanner(System.in);
-        return kb.nextLine();
-    }
-
     private void importMap(String path) {
         JsonReader jr = new JsonReader();
         JsonObject mapJson = jr.lecturaObject(path);
@@ -131,15 +97,80 @@ public class SalleMaps {
 
             graph.addRoute(
                     new Connection(
-                        connJson.get("from").getAsString(),
-                        connJson.get("to").getAsString(),
-                        connJson.get("distance").getAsInt(),
-                        connJson.get("duration").getAsInt()
+                            connJson.get("from").getAsString(),
+                            connJson.get("to").getAsString(),
+                            connJson.get("distance").getAsInt(),
+                            connJson.get("duration").getAsInt()
                     )
             );
 
 
         }
+    }
+
+    private void searchCity() {
+
+    }
+
+    private void calculateRoute() {
+
+        System.out.println();
+        System.out.print("Introduce origin city name: ");
+        String origin = readInput();
+
+        System.out.println();
+        System.out.print("Introduce destination city name: ");
+        String destination = readInput();
+
+        System.out.println();
+        System.out.println("1. Shortest route");
+        System.out.println("2. Fastest route");
+        System.out.println();
+
+        System.out.print("Option: ");
+        String option = readInput();
+        int mode = 0;
+        do {
+            switch (option){
+                case "1":
+                    mode = CityGraph.PATH_BY_DISTANCE;
+                    break;
+                case "2":
+                    mode = CityGraph.PATH_BY_DURATION;
+                    break;
+                default:
+                    System.out.println();
+                    System.err.println("Option "+option+" does not exist.");
+                    System.out.println();
+
+                    System.out.print("Option: ");
+                    option = readInput();
+            }
+        }while(!option.equals("1") && !option.equals("2"));
+
+
+
+        System.out.println(
+                graph.shortestPath(origin, destination, mode)
+                        .toString()
+        );
+
+        System.out.println();
+    }
+
+    private void printMenu(){
+        System.out.println("SALLE MAPS");
+        System.out.println();
+        System.out.println("1. Import map");
+        System.out.println("2. Search city");
+        System.out.println("3. Calculate route");
+        System.out.println("4. Shut down");
+        System.out.println();
+    }
+
+    private String readInput(){
+        Scanner kb = new Scanner(System.in);
+        return kb.nextLine();
     }
 
 }

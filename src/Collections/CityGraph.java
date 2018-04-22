@@ -241,6 +241,7 @@ public class CityGraph {
         if(mode == PATH_BY_DISTANCE) {
 
             //CALCULO DE DISTANCIAS ENTRE VERTICES MEDIANTE DISTANCIA ENTRE CIUDADES
+            System.out.println("Calculando por distancia...");
             while (!q.isEmpty()) {
 
                 //Escogemos un vertice u tal que su distancia al origen sea minima
@@ -277,6 +278,7 @@ public class CityGraph {
 
             return getPath(c, fromNode, toNode, fromIndex, toIndex);
         }else{
+            System.out.println("Calculando por tiempo...");
 
             //CALCULO DE DISTANCIAS ENTRE VERTICES MEDIANTE DISTANCIA ENTRE CIUDADES
             while (!q.isEmpty()) {
@@ -307,7 +309,7 @@ public class CityGraph {
 
                     if (uw != null && (d[k] == null || d[uIndex].getDuration() + uw.getDuration() < d[k].getDuration())) {
                         d[k] = new Connection(fromNode.source.getName(), uw.getTo(), 0, 0);
-                        d[k].setDistance(d[uIndex].getDuration() + uw.getDuration());
+                        d[k].setDuration(d[uIndex].getDuration() + uw.getDuration());
                         c[k] = uIndex;
                     }
                 }
