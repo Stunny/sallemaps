@@ -180,12 +180,10 @@ public class SalleMaps {
         System.out.println();
         System.out.print("Introduce origin city name: ");
         String origin = readInput();
-        System.out.println(rbtGraph.getCity(origin));
 
         System.out.println();
         System.out.print("Introduce destination city name: ");
         String destination = readInput();
-        System.out.println(rbtGraph.getCity(destination));
 
         System.out.println();
         System.out.println("1. Shortest route");
@@ -214,34 +212,51 @@ public class SalleMaps {
         }while(!option.equals("1") && !option.equals("2"));
         System.out.println();
 
-/*
-        long now = System.nanoTime();
-        System.out.println(
-                graph.shortestPath(origin, destination, mode)
-                        .toString()
-        );
-        long noNow = System.nanoTime()-now;
-        System.out.println();
-        System.out.println("Normal Graph-->Calculated in: "+Float.toString(noNow/1000)+"us");
-        System.out.println();
+
+        long now ;
+        long noNow;
+        try {
+            now = System.nanoTime();
+            Path p = graph.shortestPath(origin, destination, mode);
+            noNow = System.nanoTime()-now;
+            System.out.println(p.toString());
+
+            System.out.println();
+            System.out.println("Normal Graph-->Calculated in: "+Float.toString(noNow/1000)+"us");
+            System.out.println();
+
+        } catch (CityGraph.CityNotFoundException e) {
+            System.err.println(e.getMessage());
+        }
 
 
-        now = System.nanoTime();
-        System.out.println(
-                hashedGraph.shortestPath(origin, destination, mode)
-                        .toString()
-        );
-        noNow = System.nanoTime()-now;
-        System.out.println("Hashed indexes Graph-->Calculated in: "+Float.toString(noNow/1000)+"us");
-        System.out.println();
-*/
+        try {
+            now = System.nanoTime();
+            Path p = rbtGraph.shortestPath(origin, destination, mode);
+            noNow = System.nanoTime()-now;
+            System.out.println(p.toString());
+
+            System.out.println("RBT indexes Graph-->Calculated in: "+Float.toString(noNow/1000)+"us");
+            System.out.println();
+
+        } catch (CityGraph.CityNotFoundException e) {
+            System.err.println(e.getMessage());
+        }
+
+        try {
+            now = System.nanoTime();
+            Path p = hashedGraph.shortestPath(origin, destination, mode);
+            noNow = System.nanoTime()-now;
+            System.out.println(p.toString());
+
+            System.out.println("Hashed indexes Graph-->Calculated in: "+Float.toString(noNow/1000)+"us");
+            System.out.println();
+
+        } catch (CityGraph.CityNotFoundException e) {
+            e.printStackTrace();
+        }
 
 
-        long now = System.currentTimeMillis();
-        Path p = rbtGraph.shortestPath(origin, destination, mode);
-        System.out.println(p.toString());
-        long noNow = System.currentTimeMillis()-now;
-        System.out.println("RBT indexes Graph-->Calculated in: "+Long.toString(noNow)+"ms");
 
         System.out.println();
     }

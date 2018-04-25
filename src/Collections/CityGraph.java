@@ -17,6 +17,22 @@ public class CityGraph {
     public static final int PATH_BY_DISTANCE = 0;
     public static final int PATH_BY_DURATION = 1;
 
+    public class CityNotFoundException extends Exception{
+
+        private String cityNotFound;
+
+        CityNotFoundException(String city){
+            this.cityNotFound = city;
+        }
+
+        private static final String MSG = "City not found int the structure: ";
+
+        @Override
+        public String getMessage() {
+            return MSG+cityNotFound;
+        }
+    }
+
 
     protected class AdjListNode{
 
@@ -166,9 +182,17 @@ public class CityGraph {
      * @param mode Shortest path by distance of trip or by duration of trip
      * @return Result path. Null if mode isn't one of the specified or if one of the cities isn't yet in the structure
      */
-    public Path shortestPath(String from, String to, int mode){
+    public Path shortestPath(String from, String to, int mode) throws CityNotFoundException {
         boolean fromOK = checkCityInStructure(from),
                 toOK = checkCityInStructure(to);
+
+        if(!fromOK){
+            throw new CityNotFoundException(from);
+        }
+
+        if(!toOK){
+            throw new CityNotFoundException(to);
+        }
 
         if(fromOK && toOK){
 
