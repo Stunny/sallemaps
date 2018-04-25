@@ -3,6 +3,7 @@ import Collections.HashedCityGraph;
 import Collections.RBTCityGraph;
 import Model.City;
 import Model.Connection;
+import Model.Path;
 import Network.HttpRequest;
 import Network.WSGoogleMaps;
 import Utils.JsonReader;
@@ -170,18 +171,7 @@ public class SalleMaps {
             System.out.println();
 
         }else{
-            WSGoogleMaps ws = WSGoogleMaps.getInstance();
-            ws.geolocate(origin, new HttpRequest.HttpReply() {
-                @Override
-                public void onSuccess(String s) {
-                    //todo
-                }
-
-                @Override
-                public void onError(String s) {
-                    //todo
-                }
-            });
+            
         }
     }
 
@@ -190,10 +180,12 @@ public class SalleMaps {
         System.out.println();
         System.out.print("Introduce origin city name: ");
         String origin = readInput();
+        System.out.println(rbtGraph.getCity(origin));
 
         System.out.println();
         System.out.print("Introduce destination city name: ");
         String destination = readInput();
+        System.out.println(rbtGraph.getCity(destination));
 
         System.out.println();
         System.out.println("1. Shortest route");
@@ -222,7 +214,7 @@ public class SalleMaps {
         }while(!option.equals("1") && !option.equals("2"));
         System.out.println();
 
-
+/*
         long now = System.nanoTime();
         System.out.println(
                 graph.shortestPath(origin, destination, mode)
@@ -242,18 +234,16 @@ public class SalleMaps {
         noNow = System.nanoTime()-now;
         System.out.println("Hashed indexes Graph-->Calculated in: "+Float.toString(noNow/1000)+"us");
         System.out.println();
+*/
 
-        /*
 
         long now = System.currentTimeMillis();
-        System.out.println(
-                rbtGraph.shortestPath(origin, destination, mode)
-                        .toString()
-        );
+        Path p = rbtGraph.shortestPath(origin, destination, mode);
+        System.out.println(p.toString());
         long noNow = System.currentTimeMillis()-now;
         System.out.println("RBT indexes Graph-->Calculated in: "+Long.toString(noNow)+"ms");
 
-        System.out.println();*/
+        System.out.println();
     }
 
     private void printMenu(){

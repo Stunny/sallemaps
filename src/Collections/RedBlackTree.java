@@ -30,15 +30,13 @@ public class RedBlackTree {
 
         RBTnode parent;
 
-        RBTnode sibling;
-
         Object content;
 
         @Override
         public int compareTo(Object o) {
-            if(o.getClass() == RBTnode.class)
+            if(o.getClass().toString().equals(RBTnode.class.toString()))
                 if(((RBTnode) o).element.getClass() == String.class){
-                    return (((String) this.element)).compareTo(((String)((RBTnode) o).element));
+                    return this.element.compareTo(((RBTnode) o).element);
                 }
 
             return -1;
@@ -49,7 +47,7 @@ public class RedBlackTree {
                 return false;
             }
 
-            return ((RBTnode)o).element == this.element;
+            return ((RBTnode) o).element.equals(this.element);
         }
 
         /**
@@ -108,7 +106,6 @@ public class RedBlackTree {
 
         root.rightChild = null;
         root.leftChild = null;
-        root.sibling = null;
         root.parent = null;
 
         this.nodeCount = 1;
@@ -128,33 +125,11 @@ public class RedBlackTree {
 
         insert(newNode, root);
 
-        //Tras la insercion pasamos a comprobar si hacen falta cambios en el arbol
-        if(newNode.parent != this.root){
-            if(newNode.parent.sibling != null && newNode.parent.sibling.color == RED){
-                insert1(newNode);
-            }else{
-                if(newNode == newNode.parent.rightChild && newNode.parent == newNode.parent.parent.leftChild){
-                    insert2a(newNode);
-                }else
-                if(newNode == newNode.parent.leftChild && newNode.parent == newNode.parent.parent.rightChild){
-                    insert2b(newNode);
-                }else
-                if(newNode == newNode.parent.leftChild && newNode.parent == newNode.parent.parent.leftChild){
-                    insert3a(newNode);
-                }else
-                if(newNode == newNode.parent.rightChild && newNode.parent == newNode.parent.parent.rightChild){
-                    insert3b(newNode);
-                }
-            }
-        }
+        repairTree(newNode);
 
-        //Actualizamos la raiz del arbol
-        if(this.root.parent != null){
+        while(this.root.parent != null)
             this.root = this.root.parent;
-            this.root.parent = null;
-        }
 
-        this.root.color = BLACK;
         this.nodeCount++;
     }
 
@@ -221,17 +196,28 @@ public class RedBlackTree {
     //----------------------------------------------------------------------------------------------------------------//
 
     /**
+     * @param node
+     * @return the other child of the node's parent, if both exist. Null otherwise
+     */
+    private RBTnode sibling(RBTnode node){
+        if(node == null || node.parent == null){
+            return null;
+        }
+
+        return node == node.parent.leftChild? node.parent.rightChild: node.parent.leftChild;
+    }
+
+    /**
      * Insercion de nodos en el arbol al estilo BST.
      * @param newNode Nuevo nodo a inserir
      * @param root subarbol que se esta explorando en este momento
      */
     private void insert(RBTnode newNode, RBTnode root){
 
-        if(newNode.compareTo(root) < 0){
+        if(newNode.element.compareTo(root.element) < 0){
 
             if(root.leftChild == null){
                 newNode.parent = root;
-                newNode.sibling = root.rightChild;
                 root.leftChild = newNode;
                 return;
             }
@@ -239,11 +225,10 @@ public class RedBlackTree {
             insert(newNode, root.leftChild);
         }
 
-        if (newNode.compareTo(root) > 0){
+        if (newNode.element.compareTo(root.element) > 0){
 
             if(root.rightChild == null){
                 newNode.parent = root;
-                newNode.sibling = root.leftChild;
                 root.rightChild = newNode;
                 return;
             }
@@ -252,126 +237,160 @@ public class RedBlackTree {
         }
 
         //Si resulta que encontramos que el elemento ya habia sido insertado, no se producira ningun cambio
-        //en el arbol, por lo que subimos
-    }
-
-    /**
-     * Se intercambia el color del nodo abuelo al nuevo con el del padre y el del tio
-     * @param newNode El nuevo nodo insertado
-     */
-    private void insert1(RBTnode newNode){
-
-        newNode.parent.color = newNode.parent.parent.color;
-        newNode.parent.sibling.color = newNode.parent.parent.color;
-        newNode.parent.parent.changeColor();
-
-        if(newNode.parent.parent == this.root)
-            this.root.color = BLACK;
+        //en el arbol, por lo que simplemente actualizamos el contenido y subimos
     }
 
     /**
      * Se hace una rotacion para poder acceder al caso de insercion 3a
-     * @param newNode
+     * @param node
      */
-    private void insert2a(RBTnode newNode){
+    private void insert2a(RBTnode node){
         RBTnode aux = new RBTnode();
 
-        aux.parent = newNode.parent.parent;
-        newNode.parent.parent = newNode;
+        aux.parent = node.parent.parent;
+        aux.leftChild = node.leftChild;
+        node.parent.parent = node;
 
-        newNode.leftChild = newNode.parent;
-        newNode.parent = aux.parent;
+        node.leftChild = node.parent;
+        node.parent = aux.parent;
 
-        aux.parent.leftChild = newNode;
-        newNode.leftChild.rightChild = null;
+        aux.parent.leftChild = node;
+        node.leftChild.rightChild = aux.leftChild;
 
-        insert3a(newNode.leftChild);
+        insert3a(node.leftChild);
     }
 
     /**
      * Se hace una rotacion para poder acceder al caso de insercion 3b
-     * @param newNode
+     * @param node
      */
-    private void insert2b(RBTnode newNode){
+    private void insert2b(RBTnode node){
         RBTnode aux = new RBTnode();
 
-        aux.parent = newNode.parent.parent;
-        newNode.parent.parent = newNode;
+        aux.parent = node.parent.parent;
+        aux.rightChild = node.rightChild;
+        node.parent.parent = node;
 
-        newNode.rightChild = newNode.parent;
-        newNode.parent = aux.parent;
+        node.rightChild = node.parent;
+        node.parent = aux.parent;
 
-        aux.parent.rightChild = newNode;
-        newNode.rightChild.leftChild = null;
+        aux.parent.rightChild = node;
+        node.rightChild.leftChild = aux.rightChild;
 
-        insert3b(newNode.rightChild);
+        insert3b(node.rightChild);
     }
 
     /**
      * Hacemos una rotacion LL respecto al abuelo del nuevo nodo y
      * e intercambiamos el color del antiguo abuelo (ahora hermano) con el del padre
-     * @param newNode
+     * @param node
      */
-    private void insert3a(RBTnode newNode){
+    private void insert3a(RBTnode node){
         RBTnode aux = new RBTnode();
 
-        aux.parent = newNode.parent.parent;
+        aux.parent = node.parent.parent;
+        aux.rightChild = node.parent.rightChild;
 
-        newNode.parent.parent = aux.parent.parent;
-        newNode.parent.rightChild = aux.parent;
+        node.parent.parent = aux.parent.parent;
+        node.parent.rightChild = aux.parent;
 
         if(aux.parent.parent != null){
             if(aux.parent.parent.leftChild == aux.parent)
-                aux.parent.parent.leftChild = newNode.parent;
+                aux.parent.parent.leftChild = node.parent;
             else
-                aux.parent.parent.rightChild = newNode.parent;
+                aux.parent.parent.rightChild = node.parent;
         }
 
-        aux.parent.parent = newNode.parent;
-        aux.parent.leftChild = null;
+        aux.parent.parent = node.parent;
+        sibling(node).leftChild = aux.rightChild;
 
+        if(sibling(node).leftChild != null)
+            sibling(node).leftChild.parent = sibling(node);
 
-        //Actualizo las referencias a los hermanos
-        newNode.parent.sibling = newNode.parent.rightChild.sibling;
-        newNode.parent.rightChild.sibling = newNode;
-        newNode.sibling = newNode.parent.rightChild;
 
         //Actualizo los colores
-        newNode.sibling.changeColor();
-        newNode.parent.changeColor();
+        sibling(node).color = RED;
+        node.parent.color = BLACK;
+
     }
 
     /**
      * Hacemos una rotacion RR respecto al abuelo del nuevo nodo y
      * e intercambiamos el color del antiguo abuelo (ahora hermano) con el del padre
-     * @param newNode
+     * @param node
      */
-    private void insert3b(RBTnode newNode){
+    private void insert3b(RBTnode node){
         RBTnode aux = new RBTnode();
 
-        aux.parent = newNode.parent.parent;
+        aux.parent = node.parent.parent;
+        aux.leftChild = node.parent.leftChild;
 
-        newNode.parent.parent = aux.parent.parent;
-        newNode.parent.leftChild = aux.parent;
+        node.parent.parent = aux.parent.parent;
+        node.parent.leftChild = aux.parent;
 
         if(aux.parent.parent != null){
             if(aux.parent.parent.leftChild == aux.parent)
-                aux.parent.parent.leftChild = newNode.parent;
+                aux.parent.parent.leftChild = node.parent;
             else
-                aux.parent.parent.rightChild = newNode.parent;
+                aux.parent.parent.rightChild = node.parent;
         }
 
-        aux.parent.parent = newNode.parent;
-        aux.parent.rightChild = null;
+        aux.parent.parent = node.parent;
+        sibling(node).rightChild  = aux.leftChild;
 
-        //Actualizo las referencias a los hermanos
-        newNode.parent.sibling = newNode.parent.leftChild.sibling;
-        newNode.parent.leftChild.sibling = newNode;
-        newNode.sibling = newNode.parent.leftChild;
+        if(sibling(node).rightChild != null)
+            sibling(node).rightChild.parent = sibling(node);
+
 
         //Actualizo los colores
-        newNode.sibling.changeColor();
-        newNode.parent.changeColor();
+        sibling(node).color = RED;
+        node.parent.color = BLACK;
+
+    }
+
+    /**
+     * Repairs the structure of the tree after an insertion so the 5 properties of RedBlack trees remain true
+     * @param node New inserted node
+     */
+    private void repairTree(RBTnode node){
+
+        if(node == null)
+            return;
+
+        if(node.parent == null){
+            //Node is the root. So we paint it black, because root must always be black
+            node.color = BLACK;
+
+        }else if(node.parent.color == BLACK){
+            //Nothing to be done. Properties of the tree remain satisfied
+        }else if(sibling(node.parent) != null && sibling(node.parent).color == RED){
+            //Insert case 1
+
+            node.parent.color = BLACK;
+            sibling(node.parent).color = BLACK;
+
+            //After pushing blackness from grandparent, properties must be checked so
+            //grandparent remains satisfying the trees properties. So it must be repaired
+            node.parent.parent.color = RED;
+            repairTree(node.parent.parent);
+        } else{
+
+            //Rotations
+
+            if(node == node.parent.rightChild && node.parent == node.parent.parent.leftChild){
+                insert2a(node); //Pre-rotateRight
+
+            }else if(node == node.parent.leftChild && node.parent == node.parent.parent.rightChild){
+                insert2b(node); //Pre-rotateLeft
+
+            }else if(node == node.parent.leftChild && node.parent == node.parent.parent.leftChild){
+                insert3a(node); //Rotate right
+
+            }else if(node == node.parent.rightChild && node.parent == node.parent.parent.rightChild) {
+                insert3b(node); //Rotate Left
+            }
+        }
+
     }
 
     /**
@@ -452,18 +471,28 @@ public class RedBlackTree {
         try {
             rbt = new RedBlackTree("30", 30, RedBlackTree.INT_NODE);
 
-            rbt.insert("50", 50);
-            rbt.insert("64", 64);
-            rbt.insert("04", 4);
-            rbt.insert("08", 8);
-            rbt.insert("85", 85);
-            rbt.insert("14", 14);
+            rbt.insert("Barcelona", 1);
+            rbt.insert("Tarragona", 2);
+            rbt.insert("Lleida", 3);
+            rbt.insert("Girona", 4);
+            rbt.insert("Vielha", 5);
+            rbt.insert("Valencia", 6);
+            rbt.insert("Zaragoza", 7);
+            rbt.insert("Madrid", 8);
+            rbt.insert("Toledo", 9);
+            rbt.insert("Malaga", 10);
+            rbt.insert("Sevilla", 11);
+            rbt.insert("Leon", 12);
+            rbt.insert("Oviedo", 13);
+            rbt.insert("Cartagena", 14);
+            rbt.insert("A Coruña", 15);
+            rbt.insert("Bilbao", 16);
+            rbt.insert("San Sebastian", 17);
 
             System.out.println(Arrays.toString(rbt.postOrder()));
             System.out.println(Arrays.toString(rbt.preOrder()));
             System.out.println(Arrays.toString(rbt.inOrder()));
             System.out.println();
-            System.out.println(rbt.get("08").toString());
         } catch (RBTException e) {
             System.out.println(e.getMessage());
         }
