@@ -32,6 +32,12 @@ public class RBTCityGraph extends CityGraph {
     }
 
     @Override
+    public void addCity(City c) {
+        cityIndexes.insert(c.getName(), nextFreeSpot);
+        super.addCity(c);
+    }
+
+    @Override
     /**
      * Adds a new connection between two cities stored in the DiGraph.
      * If any of the cities isn't yet stored in the structure, it will be added

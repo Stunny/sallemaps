@@ -92,6 +92,51 @@ public class CityGraph {
     }
 
     /**
+     * Returns the inner indexes of the stored cities on the list
+     * @param c
+     * @return
+     */
+    public int getCityIndex(City c){
+
+        return getIndex(c.getName());
+
+    }
+
+    /**
+     * @return a list of all the cities stored in the structure
+     */
+    public ArrayList<City> getAllCities(){
+
+        ArrayList<City> list = new ArrayList<>();
+
+        for (int i = 0; i < nextFreeSpot; i++) {
+            list.add(adjList[i].source);
+        }
+
+        return list;
+
+    }
+
+    /**
+     * Adds a new city to the structure. If the city is already stored in it, does nothing.
+     * @param c new city to be added to the structure
+     */
+    public void addCity(City c){
+        if (getIndex(c.getName()) == -1){
+            adjList[nextFreeSpot] = new AdjListNode();
+            adjList[nextFreeSpot].source = c;
+
+            adjList[nextFreeSpot].label = null;
+            adjList[nextFreeSpot].next = null;
+            adjList[nextFreeSpot].destination = null;
+
+            this.nextFreeSpot++;
+
+            checkCapacity();
+        }
+    }
+
+    /**
      * Adds a new connection between two cities stored in the DiGraph.
      * If any of the cities isn't yet stored in the structure, it will be added
      * @param route data of the new connection
@@ -380,8 +425,9 @@ public class CityGraph {
     }
 
     /**
+     * Returns the index corresponding to the city in the adjacencies list
      * @param name city name
-     * @return Index in graph
+     * @return Index in graph. -1 if the city isn't stored in the structure
      */
     protected Integer getIndex(String name){
         Integer index = new Integer(-1);

@@ -4,13 +4,14 @@ import Collections.RBTCityGraph;
 import Model.City;
 import Model.Connection;
 import Model.Path;
-import Network.HttpRequest;
-import Network.WSGoogleMaps;
+import Utils.CitySeeker;
 import Utils.JsonReader;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class SalleMaps {
@@ -140,38 +141,54 @@ public class SalleMaps {
         String origin = readInput();
 
         if(hashedGraph.checkCityInStructure(origin)){
-            City c = hashedGraph.getCity(origin);
-
-            System.out.println();
-            System.out.println("-->Name: "+c.getName());
-            System.out.println("-->Country: "+c.getCountry());
-            System.out.println("-->Coordinates: "+c.getLatitude()+", "+c.getLongitude());
-            System.out.println("-->Connections: ");
-
-            City[] conns = hashedGraph.getChildren(origin);
-
-            if(conns == null){
-                System.out.println();
-                System.out.println("\t NONE");
-                return;
-            }
-
-            for (City city : conns){
-
-                Connection conn = hashedGraph.getLabel(origin, city.getName());
-
-                System.out.println();
-                System.out.println("\t>-->Name: "+city.getName());
-                System.out.println("\t>-->Country: "+city.getCountry());
-                System.out.println("\t>-->Coordinates: "+city.getLatitude()+", "+city.getLongitude());
-                System.out.println("\t>-->Distance from "+origin+": "+Float.toString(conn.getDistance()/1000)+"km");
-                System.out.println("\t>-->Duration of trip from "+origin+": "+LocalTime.ofSecondOfDay(conn.getDuration()).toString());
-            }
+            printSearchResult(origin);
 
             System.out.println();
 
         }else{
-            
+            CitySeeker seeker = new CitySeeker();
+
+            seeker.seek(origin);
+            if(seeker.hasFound()){
+                City result = seeker.getSearchResult();
+
+                graph.addCity(result);
+                rbtGraph.addCity(result);
+                hashedGraph.addCity(result);
+
+                ArrayList<City> currentStoredCities = graph.getAllCities();
+                ArrayList<Integer> destinationIndexes = new ArrayList<>();
+
+                for(City c : currentStoredCities){
+                    if(c.getName().equals(result.getName())) continue;
+
+                    //Establezco un radio de conexion entre ciudades de 300Km
+                    if(distance(c, result) < 300000){
+                        destinationIndexes.add(hashedGraph.getCityIndex(c));
+                    }
+
+                }
+
+                int qIndexes = destinationIndexes.size();
+                int[] indexes = new int[qIndexes];
+                for (int i = 0; i < qIndexes; i++) {
+                    indexes[i] = destinationIndexes.get(i);
+                }
+
+                seeker.connect(result, currentStoredCities, indexes);
+
+                if(seeker.isConnected()){
+                    List<Connection> connResult = seeker.getConnectionResults();
+
+                    for (Connection conn : connResult){
+                        graph.addRoute(conn);
+                        rbtGraph.addRoute(conn);
+                        hashedGraph.addRoute(conn);
+                    }
+
+                    printSearchResult(origin);
+                }
+            }
         }
     }
 
@@ -271,9 +288,68 @@ public class SalleMaps {
         System.out.println();
     }
 
+    private void printSearchResult(String origin){
+        City c = hashedGraph.getCity(origin);
+
+        System.out.println();
+        System.out.println("-->Name: "+c.getName());
+        System.out.println("-->Country: "+c.getCountry());
+        System.out.println("-->Coordinates: "+c.getLatitude()+", "+c.getLongitude());
+        System.out.println("-->Connections: ");
+
+        City[] conns = hashedGraph.getChildren(origin);
+
+        if(conns == null){
+            System.out.println();
+            System.out.println("\t NONE");
+            return;
+        }
+
+        for (City city : conns){
+
+            Connection conn = hashedGraph.getLabel(origin, city.getName());
+
+            System.out.println();
+            System.out.println("\t>-->Name: "+city.getName());
+            System.out.println("\t>-->Country: "+city.getCountry());
+            System.out.println("\t>-->Coordinates: "+city.getLatitude()+", "+city.getLongitude());
+            System.out.println("\t>-->Distance from "+origin+": "+Float.toString(conn.getDistance()/1000)+"km");
+            System.out.println("\t>-->Duration of trip from "+origin+": "+LocalTime.ofSecondOfDay(conn.getDuration()).toString());
+        }
+
+        System.out.println();
+    }
+
     private String readInput(){
         Scanner kb = new Scanner(System.in);
         return kb.nextLine();
     }
+
+    /**
+     * Using the harvesine formula, this function calculates the great-circle distance between two cities
+     * @param c1 City 1
+     * @param c2 City 2
+     * @return distance in meters between the two cities
+     */
+    private double distance(City c1, City c2){
+
+        //Formula source https://www.movable-type.co.uk/scripts/latlong.html
+
+        double R = 6371000;//radio de la tierra en metros
+
+        double dLat = Math.toRadians(c2.getLatitude()-c1.getLatitude());
+        double dLng = Math.toRadians(c2.getLongitude()-c1.getLongitude());
+
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(Math.toRadians(c1.getLatitude()))
+                * Math.cos(Math.toRadians(c2.getLatitude()))
+                * Math.sin(dLng/2) * Math.sin(dLng/2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+        return R * c;
+
+    }
+
 
 }
