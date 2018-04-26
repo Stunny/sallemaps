@@ -6,6 +6,9 @@ import Network.DistanceParser;
 import Network.GeocodeParser;
 import Network.HttpRequest;
 import TempNetwork.WSGoogleMaps;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +26,8 @@ public class CitySeeker {
     private boolean found;
 
     private boolean connected;
+
+    private List<City> cities;
 
 
     public CitySeeker(){
@@ -55,7 +60,7 @@ public class CitySeeker {
     /**
      * Searches for new connections between cities based on their distance to one another, using the Google Maps API. @see Network.WSGoogleMaps
      */
-    public void connect(City source, ArrayList<City> destinations, int[] destIndexes){
+    public void connect(City source, ArrayList<City> destinations){
 
         double srcLat = source.getLatitude();
         double srcLng = source.getLongitude();
@@ -70,13 +75,10 @@ public class CitySeeker {
             destLngs[i] = destinations.get(i).getLongitude();
         }
 
-        connectionResults = new ArrayList<>();
-
         service.distance(srcLat, srcLng, destLats, destLngs, new HttpRequest.HttpReply() {
             @Override
             public void onSuccess(String data) {
-                connected = true;
-                DistanceParser.parseDistances(data, source.getName(), destinations, destIndexes, connectionResults);
+                setConnectionResults(data);
             }
 
             @Override
@@ -87,6 +89,9 @@ public class CitySeeker {
 
     }
 
+    public void setCities(List<City> cities) {
+        this.cities = cities;
+    }
 
     public City getSearchResult(){
         found = false;
@@ -111,6 +116,35 @@ public class CitySeeker {
             searchResult = data.get(0);
             System.out.println(searchResult.toString());
         }
+    }
+
+    private void setConnectionResults(String data){
+
+        Gson gson = new Gson();
+        JsonObject result = gson.fromJson(data, JsonObject.class);
+        JsonArray rows = result.get("rows").getAsJsonArray().get(0).getAsJsonObject()
+                .get("elements").getAsJsonArray();
+
+        int qDistances = rows.size();
+
+        ArrayList<Integer> indexes = new ArrayList<>();
+
+        for (int i = 0; i < qDistances - 1; i++) {
+            JsonObject row = rows.get(i).getAsJsonObject();
+
+            //Establezco el radio maximo de conexion entre ciudades a 300km
+            if(row.get("distance").getAsJsonObject().get("value").getAsInt() < 300000){
+                indexes.add(i);
+            }
+        }
+        int qIndexes = indexes.size();
+        int[] indexArray = new int[qIndexes];
+        for (int i = 0; i < qIndexes; i++) {
+            indexArray[i] = indexes.get(i);
+        }
+
+        connectionResults = new ArrayList<>();
+        DistanceParser.parseDistances(data, searchResult.getName(), cities, indexArray, connectionResults);
     }
 
 

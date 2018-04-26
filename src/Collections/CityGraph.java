@@ -430,7 +430,7 @@ public class CityGraph {
      * @return Index in graph. -1 if the city isn't stored in the structure
      */
     protected Integer getIndex(String name){
-        Integer index = new Integer(-1);
+        Integer index = -1;
         for (int i = 0; i < nextFreeSpot; i++) {
             if(adjList[i].source.getName().equals(name)){
                 index = i;

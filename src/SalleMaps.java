@@ -157,25 +157,9 @@ public class SalleMaps {
                 hashedGraph.addCity(result);
 
                 ArrayList<City> currentStoredCities = graph.getAllCities();
-                ArrayList<Integer> destinationIndexes = new ArrayList<>();
 
-                for(City c : currentStoredCities){
-                    if(c.getName().equals(result.getName())) continue;
-
-                    //Establezco un radio de conexion entre ciudades de 300Km
-                    if(distance(c, result) < 300000){
-                        destinationIndexes.add(hashedGraph.getCityIndex(c));
-                    }
-
-                }
-
-                int qIndexes = destinationIndexes.size();
-                int[] indexes = new int[qIndexes];
-                for (int i = 0; i < qIndexes; i++) {
-                    indexes[i] = destinationIndexes.get(i);
-                }
-
-                seeker.connect(result, currentStoredCities, indexes);
+                seeker.setCities(currentStoredCities);
+                seeker.connect(result, currentStoredCities);
 
                 if(seeker.isConnected()){
                     List<Connection> connResult = seeker.getConnectionResults();
@@ -323,32 +307,6 @@ public class SalleMaps {
     private String readInput(){
         Scanner kb = new Scanner(System.in);
         return kb.nextLine();
-    }
-
-    /**
-     * Using the harvesine formula, this function calculates the great-circle distance between two cities
-     * @param c1 City 1
-     * @param c2 City 2
-     * @return distance in meters between the two cities
-     */
-    private double distance(City c1, City c2){
-
-        //Formula source https://www.movable-type.co.uk/scripts/latlong.html
-
-        double R = 6371000;//radio de la tierra en metros
-
-        double dLat = Math.toRadians(c2.getLatitude()-c1.getLatitude());
-        double dLng = Math.toRadians(c2.getLongitude()-c1.getLongitude());
-
-        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(Math.toRadians(c1.getLatitude()))
-                * Math.cos(Math.toRadians(c2.getLatitude()))
-                * Math.sin(dLng/2) * Math.sin(dLng/2);
-
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-        return R * c;
-
     }
 
 
