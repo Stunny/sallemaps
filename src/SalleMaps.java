@@ -28,7 +28,8 @@ public class SalleMaps {
 
     public void menu(){
 
-        String option;
+        String option, suboption = "0";
+        CityGraph selectedGraph = graph;
 
         do{
             printMenu();
@@ -47,16 +48,54 @@ public class SalleMaps {
                         System.out.println();
                         System.err.println("Before doing any operation you must initialize the city graph. Please execute option #1.");
                         System.out.println();
-                    }else
-                        searchCity();
+                    }else {
+                        do{
+                            System.out.println();
+                            System.out.println("Please select the level of optimization of the task:");
+                            printSubMenu();
+
+                            suboption = readInput();
+                            switch(suboption){
+                                case "1":
+                                    selectedGraph = graph;
+                                    break;
+                                case "2":
+                                    selectedGraph = rbtGraph;
+                                    break;
+                                case "3":
+                                    selectedGraph = hashedGraph;
+                                    break;
+                            }
+                        }while(!suboption.equals("1") && !suboption.equals("2") && !suboption.equals("3"));
+                        searchCity(selectedGraph);
+                    }
                     break;
                 case "3":
                     if (graph == null){
                         System.out.println();
                         System.err.println("Before doing any operation you must initialize the city graph. Please execute option #1.");
                         System.out.println();
-                    }else
-                        calculateRoute();
+                    }else {
+                        do{
+                            System.out.println();
+                            System.out.println("Please select the level of optimization of the task:");
+                            printSubMenu();
+
+                            suboption = readInput();
+                            switch(suboption){
+                                case "1":
+                                    selectedGraph = graph;
+                                    break;
+                                case "2":
+                                    selectedGraph = rbtGraph;
+                                    break;
+                                case "3":
+                                    selectedGraph = hashedGraph;
+                                    break;
+                            }
+                        }while(!suboption.equals("1") && !suboption.equals("2") && !suboption.equals("3"));
+                        calculateRoute(selectedGraph);
+                    }
                     break;
 
                 case "4":
@@ -134,14 +173,14 @@ public class SalleMaps {
         }
     }
 
-    private void searchCity() {
+    private void searchCity(CityGraph selectedGraph) {
 
         System.out.println();
         System.out.print("Type city name: ");
         String origin = readInput();
 
-        if(hashedGraph.checkCityInStructure(origin)){
-            printSearchResult(origin);
+        if(selectedGraph.checkCityInStructure(origin)){
+            printSearchResult(origin, selectedGraph);
 
             System.out.println();
 
@@ -191,7 +230,7 @@ public class SalleMaps {
                 System.out.println("NEW CITY ADDED");
                 System.out.println();
 
-                printSearchResult(result.getName());
+                printSearchResult(result.getName(), selectedGraph);
                 System.out.println();
             } else {
                 System.out.println("Couldn't find the city neither in the system nor in the GMaps API.");
@@ -199,7 +238,7 @@ public class SalleMaps {
         }
     }
 
-    private void calculateRoute() {
+    private void calculateRoute(CityGraph selectedGraph) {
 
         System.out.println();
         System.out.print("Introduce origin city name: ");
@@ -237,52 +276,60 @@ public class SalleMaps {
         System.out.println();
 
 
-        long now ;
-        long noNow;
         try {
-            now = System.nanoTime();
+            long now = System.nanoTime();
             Path p = graph.shortestPath(origin, destination, mode);
-            noNow = System.nanoTime()-now;
             System.out.println(p.toString());
 
             System.out.println();
-            System.out.println("Normal Graph-->Calculated in: "+Float.toString(noNow/1000)+"us");
-            System.out.println();
+            System.out.println("Using "+selectedGraph.getClass().toString());
+            System.out.println("Task finished in: "+Long.toString((System.nanoTime()-now)/1000)+"us");
 
         } catch (CityGraph.CityNotFoundException e) {
             System.err.println(e.getMessage());
         }
-
-
-        try {
-            now = System.nanoTime();
-            Path p = rbtGraph.shortestPath(origin, destination, mode);
-            noNow = System.nanoTime()-now;
-            System.out.println(p.toString());
-
-            System.out.println("RBT indexes Graph-->Calculated in: "+Float.toString(noNow/1000)+"us");
-            System.out.println();
-
-        } catch (CityGraph.CityNotFoundException e) {
-            System.err.println(e.getMessage());
-        }
-
-        try {
-            now = System.nanoTime();
-            Path p = hashedGraph.shortestPath(origin, destination, mode);
-            noNow = System.nanoTime()-now;
-            System.out.println(p.toString());
-
-            System.out.println("Hashed indexes Graph-->Calculated in: "+Float.toString(noNow/1000)+"us");
-            System.out.println();
-
-        } catch (CityGraph.CityNotFoundException e) {
-            e.printStackTrace();
-        }
-
-
 
         System.out.println();
+    }
+
+    private void printSearchResult(String origin, CityGraph selectedGraph){
+        long now = System.nanoTime();
+        City c = selectedGraph.getCity(origin);
+
+        System.out.println();
+        System.out.println("-->Name: "+c.getName());
+        System.out.println("-->Country: "+c.getCountry());
+        System.out.println("-->Coordinates: "+c.getLatitude()+", "+c.getLongitude());
+        System.out.println("-->Connections: ");
+
+        City[] conns = selectedGraph.getChildren(origin);
+
+        if(conns == null){
+            System.out.println();
+            System.out.println("\t NONE");
+            return;
+        }
+
+        for (City city : conns){
+
+            Connection conn = selectedGraph.getLabel(origin, city.getName());
+
+            System.out.println();
+            System.out.println("\t>-->Name: "+city.getName());
+            System.out.println("\t>-->Country: "+city.getCountry());
+            System.out.println("\t>-->Coordinates: "+city.getLatitude()+", "+city.getLongitude());
+            System.out.println("\t>-->Distance from "+origin+": "+Float.toString(conn.getDistance()/1000)+"km");
+            System.out.println("\t>-->Duration of trip from "+origin+": "+LocalTime.ofSecondOfDay(conn.getDuration()).toString());
+        }
+
+        System.out.println();
+        System.out.println("Using "+selectedGraph.getClass().toString());
+        System.out.println("Task finished in: "+Long.toString((System.nanoTime()-now)/1000)+"us");
+    }
+
+    private String readInput(){
+        Scanner kb = new Scanner(System.in);
+        return kb.nextLine();
     }
 
     private void printMenu(){
@@ -295,41 +342,12 @@ public class SalleMaps {
         System.out.println();
     }
 
-    private void printSearchResult(String origin){
-        City c = hashedGraph.getCity(origin);
-
+    private void printSubMenu(){
         System.out.println();
-        System.out.println("-->Name: "+c.getName());
-        System.out.println("-->Country: "+c.getCountry());
-        System.out.println("-->Coordinates: "+c.getLatitude()+", "+c.getLongitude());
-        System.out.println("-->Connections: ");
-
-        City[] conns = hashedGraph.getChildren(origin);
-
-        if(conns == null){
-            System.out.println();
-            System.out.println("\t NONE");
-            return;
-        }
-
-        for (City city : conns){
-
-            Connection conn = hashedGraph.getLabel(origin, city.getName());
-
-            System.out.println();
-            System.out.println("\t>-->Name: "+city.getName());
-            System.out.println("\t>-->Country: "+city.getCountry());
-            System.out.println("\t>-->Coordinates: "+city.getLatitude()+", "+city.getLongitude());
-            System.out.println("\t>-->Distance from "+origin+": "+Float.toString(conn.getDistance()/1000)+"km");
-            System.out.println("\t>-->Duration of trip from "+origin+": "+LocalTime.ofSecondOfDay(conn.getDuration()).toString());
-        }
-
+        System.out.println("1. No optimization");
+        System.out.println("2. Indexes stored in a Red/Black Tree");
+        System.out.println("3. Indexes stored in a Hash Table");
         System.out.println();
-    }
-
-    private String readInput(){
-        Scanner kb = new Scanner(System.in);
-        return kb.nextLine();
     }
 
 
