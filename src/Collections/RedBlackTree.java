@@ -3,6 +3,9 @@ package Collections;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+/**
+ * Implementa un arbol rojo negro de Strings (TODO: implementarlo para numeros enteros)
+ */
 public class RedBlackTree {
 
     private static final char BLACK = 'b';

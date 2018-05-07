@@ -13,6 +13,9 @@ import com.google.gson.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *
+ */
 public class CitySeeker {
 
     private static final String API_KEY = "AIzaSyCMG_IEevGb9kFUfR_DVgQIT0Gfqrz3S_I";
@@ -120,6 +123,10 @@ public class CitySeeker {
         }
     }
 
+    /**
+     * Parses the result data that the google maps api returned and extracts the information of the distance matrix
+     * @param data Result data from the google maps api
+     */
     private void setConnectionResults(String data){
 
         Gson gson = new Gson();

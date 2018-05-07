@@ -2,6 +2,9 @@ package Collections;
 
 import java.util.Arrays;
 
+/**
+ * Implementa una tabla de hash de direccionamiento abierto mediante funcion de rehash
+ */
 public class HashTable {
 
     private class TablePair{

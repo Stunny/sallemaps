@@ -6,6 +6,10 @@ import Model.Path;
 
 import java.util.ArrayList;
 
+/**
+ * Optimiza la implementacion del grafo de ciudades mediante un arbol rojo-negro que almacena los indices de las ciudades
+ * dentro del vector principal del grafo
+ */
 public class RBTCityGraph extends CityGraph {
 
     private RedBlackTree cityIndexes;

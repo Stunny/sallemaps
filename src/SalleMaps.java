@@ -238,6 +238,41 @@ public class SalleMaps {
         }
     }
 
+    private void printSearchResult(String origin, CityGraph selectedGraph){
+        long now = System.nanoTime();
+        City c = selectedGraph.getCity(origin);
+
+        System.out.println();
+        System.out.println("-->Name: "+c.getName());
+        System.out.println("-->Country: "+c.getCountry());
+        System.out.println("-->Coordinates: "+c.getLatitude()+", "+c.getLongitude());
+        System.out.println("-->Connections: ");
+
+        City[] conns = selectedGraph.getChildren(origin);
+
+        if(conns == null){
+            System.out.println();
+            System.out.println("\t NONE");
+            return;
+        }
+
+        for (City city : conns){
+
+            Connection conn = selectedGraph.getLabel(origin, city.getName());
+
+            System.out.println();
+            System.out.println("\t>-->Name: "+city.getName());
+            System.out.println("\t>-->Country: "+city.getCountry());
+            System.out.println("\t>-->Coordinates: "+city.getLatitude()+", "+city.getLongitude());
+            System.out.println("\t>-->Distance from "+origin+": "+Float.toString(conn.getDistance()/1000)+"km");
+            System.out.println("\t>-->Duration of trip from "+origin+": "+LocalTime.ofSecondOfDay(conn.getDuration()).toString());
+        }
+
+        System.out.println();
+        System.out.println("Using "+selectedGraph.getClass().toString());
+        System.out.println("Task finished in: "+Long.toString((System.nanoTime()-now)/1000)+"us");
+    }
+
     private void calculateRoute(CityGraph selectedGraph) {
 
         System.out.println();
@@ -292,40 +327,6 @@ public class SalleMaps {
         System.out.println();
     }
 
-    private void printSearchResult(String origin, CityGraph selectedGraph){
-        long now = System.nanoTime();
-        City c = selectedGraph.getCity(origin);
-
-        System.out.println();
-        System.out.println("-->Name: "+c.getName());
-        System.out.println("-->Country: "+c.getCountry());
-        System.out.println("-->Coordinates: "+c.getLatitude()+", "+c.getLongitude());
-        System.out.println("-->Connections: ");
-
-        City[] conns = selectedGraph.getChildren(origin);
-
-        if(conns == null){
-            System.out.println();
-            System.out.println("\t NONE");
-            return;
-        }
-
-        for (City city : conns){
-
-            Connection conn = selectedGraph.getLabel(origin, city.getName());
-
-            System.out.println();
-            System.out.println("\t>-->Name: "+city.getName());
-            System.out.println("\t>-->Country: "+city.getCountry());
-            System.out.println("\t>-->Coordinates: "+city.getLatitude()+", "+city.getLongitude());
-            System.out.println("\t>-->Distance from "+origin+": "+Float.toString(conn.getDistance()/1000)+"km");
-            System.out.println("\t>-->Duration of trip from "+origin+": "+LocalTime.ofSecondOfDay(conn.getDuration()).toString());
-        }
-
-        System.out.println();
-        System.out.println("Using "+selectedGraph.getClass().toString());
-        System.out.println("Task finished in: "+Long.toString((System.nanoTime()-now)/1000)+"us");
-    }
 
     private String readInput(){
         Scanner kb = new Scanner(System.in);

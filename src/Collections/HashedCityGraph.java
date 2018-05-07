@@ -6,6 +6,10 @@ import Model.Path;
 
 import java.util.ArrayList;
 
+/**
+ * Optimiza la implementacion del grafo de ciudades añadiendo una tabla de hash que almacena los indices
+ * de las ciudades dentro del vector principal del grafo
+ */
 public class HashedCityGraph extends CityGraph {
 
     private HashTable cityIndexes;

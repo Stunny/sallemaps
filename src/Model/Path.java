@@ -6,6 +6,9 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 
+/**
+ * Representa el camino a seguir entre dos ciudades, las ciudades por las que pasa, su duracion y distancia total
+ */
 public class Path {
 
     private City from;
