@@ -5,7 +5,7 @@ import Model.Connection;
 import Network.DistanceParser;
 import Network.GeocodeParser;
 import Network.HttpRequest;
-import TempNetwork.WSGoogleMaps;
+import Network.WSGoogleMaps;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -62,6 +62,8 @@ public class CitySeeker {
      */
     public void connect(City source, ArrayList<City> destinations){
 
+        connected = false;
+
         double srcLat = source.getLatitude();
         double srcLng = source.getLongitude();
 
@@ -114,7 +116,7 @@ public class CitySeeker {
         if(!data.isEmpty()){
             found = true;
             searchResult = data.get(0);
-            System.out.println(searchResult.toString());
+            System.out.println();
         }
     }
 
@@ -129,20 +131,15 @@ public class CitySeeker {
 
         ArrayList<Integer> indexes = new ArrayList<>();
 
-        for (int i = 0; i < qDistances - 1; i++) {
-            JsonObject row = rows.get(i).getAsJsonObject();
-
-            //Establezco el radio maximo de conexion entre ciudades a 300km
-            if(row.get("distance").getAsJsonObject().get("value").getAsInt() < 300000){
-                indexes.add(i);
-            }
+        for (int i = 0; i < qDistances; i++) {
+            indexes.add(i);
         }
         int qIndexes = indexes.size();
         int[] indexArray = new int[qIndexes];
         for (int i = 0; i < qIndexes; i++) {
             indexArray[i] = indexes.get(i);
         }
-
+        connected = true;
         connectionResults = new ArrayList<>();
         DistanceParser.parseDistances(data, searchResult.getName(), cities, indexArray, connectionResults);
     }

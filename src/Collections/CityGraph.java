@@ -96,9 +96,9 @@ public class CityGraph {
      * @param c
      * @return
      */
-    public int getCityIndex(City c){
+    public int getCityIndex(String c){
 
-        return getIndex(c.getName());
+        return getIndex(c);
 
     }
 
@@ -122,7 +122,8 @@ public class CityGraph {
      * @param c new city to be added to the structure
      */
     public void addCity(City c){
-        if (getIndex(c.getName()) == -1){
+        int index = getIndex(c.getName());
+        if (index == -1 || index == nextFreeSpot){
             adjList[nextFreeSpot] = new AdjListNode();
             adjList[nextFreeSpot].source = c;
 

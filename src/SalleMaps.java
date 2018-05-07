@@ -147,6 +147,7 @@ public class SalleMaps {
 
         }else{
             CitySeeker seeker = new CitySeeker();
+            CitySeeker inverseSeeker = new CitySeeker();
 
             seeker.seek(origin);
             if(seeker.hasFound()){
@@ -165,13 +166,35 @@ public class SalleMaps {
                     List<Connection> connResult = seeker.getConnectionResults();
 
                     for (Connection conn : connResult){
-                        graph.addRoute(conn);
-                        rbtGraph.addRoute(conn);
-                        hashedGraph.addRoute(conn);
+                        if(conn.getDistance() < 300000) {
+                            graph.addRoute(conn);
+                            rbtGraph.addRoute(conn);
+                            hashedGraph.addRoute(conn);
+
+                            ArrayList<City> inverse = new ArrayList<>();
+                            inverse.add(result);
+                            inverseSeeker.setCities(inverse);
+                            inverseSeeker.seek(conn.getTo());
+                            inverseSeeker.connect(graph.getCity(conn.getTo()), inverse);
+                            List<Connection> inverseResult = inverseSeeker.getConnectionResults();
+
+                            Connection inverseConn = inverseResult.get(0);
+                            graph.addRoute(inverseConn);
+                            rbtGraph.addRoute(inverseConn);
+                            hashedGraph.addRoute(inverseConn);
+                        }
                     }
 
-                    printSearchResult(origin);
                 }
+
+                System.out.println();
+                System.out.println("NEW CITY ADDED");
+                System.out.println();
+
+                printSearchResult(result.getName());
+                System.out.println();
+            } else {
+                System.out.println("Couldn't find the city neither in the system nor in the GMaps API.");
             }
         }
     }
